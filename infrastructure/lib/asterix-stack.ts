@@ -9,7 +9,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
-const BEDROCK_MODEL_ARN = 'arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0';
+const BEDROCK_MODEL_ARN = 'arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0';
 
 export class AsterixStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -82,7 +82,10 @@ export class AsterixStack extends cdk.Stack {
 
     processLetterFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
-      resources: [BEDROCK_MODEL_ARN],
+      resources: [
+        BEDROCK_MODEL_ARN,
+        `arn:aws:bedrock:eu-west-2:${this.account}:inference-profile/eu.anthropic.claude-sonnet-4-5-20250929-v1:0`,
+      ],
     }));
 
     lettersBucket.addEventNotification(

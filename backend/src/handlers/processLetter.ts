@@ -2,8 +2,7 @@ import { S3Handler } from 'aws-lambda';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import AnthropicBedrock from '@anthropic-ai/bedrock-sdk';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdf = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string }>;
+import { extractText } from 'unpdf';
 import { dynamodb, s3 } from '../lib/clients';
 
 const TABLE_NAME = process.env.TABLE_NAME!;
@@ -24,7 +23,7 @@ export const handler: S3Handler = async (event) => {
       await markProcessing(letterId);
 
       const pdfBuffer = await downloadFromS3(bucketName, s3Key);
-      const { text } = await pdf(pdfBuffer);
+      const { text } = await extractText(new Uint8Array(pdfBuffer), { mergePages: true });
 
       const nhsNumber = extractNhsNumber(text);
       const summary = await summariseLetter(text);
@@ -55,7 +54,7 @@ function extractNhsNumber(text: string): string | undefined {
 
 async function summariseLetter(text: string): Promise<string> {
   const message = await bedrock.messages.create({
-    model: 'anthropic.claude-sonnet-4-5-20250929-v1:0',
+    model: 'eu.anthropic.claude-sonnet-4-5-20250929-v1:0',
     max_tokens: 1024,
     messages: [
       {

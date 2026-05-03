@@ -56,12 +56,11 @@ async function summariseLetter(text: string): Promise<string> {
   const message = await bedrock.messages.create({
     model: 'eu.anthropic.claude-sonnet-4-5-20250929-v1:0',
     max_tokens: 1024,
+    system: 'You are a clinical assistant helping doctors quickly understand patient letters. Always respond using markdown formatting with - for bullet points. Never include a heading or introductory label.',
     messages: [
       {
         role: 'user',
-        content: `You are a clinical assistant helping doctors quickly understand patient letters.
-
-Summarise the following clinical letter in 3-5 bullet points. Do not include a heading or introductory label. Focus on:
+        content: `Summarise the following clinical letter in 3-5 bullet points. Focus on:
 - The primary reason for the letter
 - Key clinical findings or diagnoses
 - Medications or treatments mentioned

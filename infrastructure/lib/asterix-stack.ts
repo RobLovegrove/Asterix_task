@@ -95,6 +95,15 @@ export class AsterixStack extends cdk.Stack {
       ],
     }));
 
+    processLetterFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'aws-marketplace:ViewSubscriptions',
+        'aws-marketplace:Subscribe',
+        'aws-marketplace:Unsubscribe',
+      ],
+      resources: ['*'],
+    }));
+
     lettersBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,
       new s3notifications.LambdaDestination(processLetterFn),

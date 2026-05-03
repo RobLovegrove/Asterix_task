@@ -1,4 +1,5 @@
 import type { Letter } from '../types';
+import Markdown from 'react-markdown';
 
 interface Props {
   letter: Letter;
@@ -41,9 +42,7 @@ export function LetterDetail({ letter }: Props) {
           <section className="detail-section">
             <h3>Summary</h3>
             <div className="summary-text">
-              {letter.summary?.split('\n').map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
+              <Markdown>{letter.summary}</Markdown>
             </div>
           </section>
         </>

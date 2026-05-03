@@ -1,0 +1,96 @@
+service: asterix-clinical-letters
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: eu-west-2
+  environment:
+    BUCKET_NAME: !Ref LettersBucket
+    TABLE_NAME: !Ref LettersTable
+    ANTHROPIC_API_KEY: ${env:ANTHROPIC_API_KEY}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: !Sub 'arn:aws:s3:::${LettersBucket}/*'
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:Scan
+          Resource: !GetAtt LettersTable.Arn
+
+plugins:
+  - serverless-offline
+
+build:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node20
+
+functions:
+  initiateUpload:
+    handler: src/handlers/initiateUpload.handler
+    events:
+      - http:
+          path: /letters
+          method: post
+          cors: true
+
+  processLetter:
+    handler: src/handlers/processLetter.handler
+    timeout: 120
+    events:
+      - s3:
+          bucket: !Ref LettersBucket
+          event: s3:ObjectCreated:*
+          existing: true
+
+  getLetters:
+    handler: src/handlers/getLetters.handler
+    events:
+      - http:
+          path: /letters
+          method: get
+          cors: true
+
+  getLetter:
+    handler: src/handlers/getLetter.handler
+    events:
+      - http:
+          path: /letters/{id}
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    LettersBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: asterix-clinical-letters-${sls:stage}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ['*']
+              AllowedMethods: [PUT]
+              AllowedOrigins: ['*']
+              MaxAge: 3600
+
+    LettersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: asterix-letters-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: letterId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: letterId
+            KeyType: HASH

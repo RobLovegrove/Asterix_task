@@ -4,9 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "serverless deploy",
-    "deploy:prod": "serverless deploy --stage prod",
-    "offline": "serverless offline",
     "test": "jest"
   },
   "keywords": [],
@@ -19,15 +16,12 @@
     "@types/node": "^25.6.0",
     "@types/uuid": "^10.0.0",
     "jest": "^30.3.0",
-    "serverless": "^4.35.0",
-    "serverless-offline": "^14.5.0",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.29.1",
-    "@anthropic-ai/sdk": "^0.92.0",
     "@aws-sdk/client-dynamodb": "^3.1041.0",
     "@aws-sdk/client-s3": "^3.1041.0",
     "@aws-sdk/lib-dynamodb": "^3.1041.0",

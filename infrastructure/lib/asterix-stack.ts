@@ -6,6 +6,7 @@ import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3notifications from 'aws-cdk-lib/aws-s3-notifications';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -33,6 +34,29 @@ export class AsterixStack extends cdk.Stack {
       partitionKey: { name: 'letterId', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    const userPool = new cognito.UserPool(this, 'UserPool', {
+      selfSignUpEnabled: true,
+      signInAliases: { email: true },
+      autoVerify: { email: true },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireUppercase: true,
+        requireDigits: true,
+        requireSymbols: false,
+      },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    const userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
+      userPool,
+      authFlows: {
+        userPassword: true,
+        userSrp: true,
+      },
+      generateSecret: false,
     });
 
     const handlerDir = path.resolve(__dirname, '../../backend/src/handlers');
@@ -114,19 +138,30 @@ export class AsterixStack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ['Content-Type', 'X-Api-Key'],
+        allowHeaders: ['Content-Type', 'Authorization'],
       },
     });
 
+    const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'Authorizer', {
+      cognitoUserPools: [userPool],
+    });
+
+    const methodOptions = {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    };
+
     const letters = api.root.addResource('letters');
-    letters.addMethod('POST', new apigateway.LambdaIntegration(initiateUploadFn));
-    letters.addMethod('GET', new apigateway.LambdaIntegration(getLettersFn));
+    letters.addMethod('POST', new apigateway.LambdaIntegration(initiateUploadFn), methodOptions);
+    letters.addMethod('GET', new apigateway.LambdaIntegration(getLettersFn), methodOptions);
 
     const letter = letters.addResource('{id}');
-    letter.addMethod('GET', new apigateway.LambdaIntegration(getLetterFn));
-    letter.addMethod('DELETE', new apigateway.LambdaIntegration(deleteLetterFn));
+    letter.addMethod('GET', new apigateway.LambdaIntegration(getLetterFn), methodOptions);
+    letter.addMethod('DELETE', new apigateway.LambdaIntegration(deleteLetterFn), methodOptions);
 
     new cdk.CfnOutput(this, 'ApiUrl', { value: api.url });
+    new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
+    new cdk.CfnOutput(this, 'UserPoolClientId', { value: userPoolClient.userPoolClientId });
     new cdk.CfnOutput(this, 'BucketName', { value: lettersBucket.bucketName });
     new cdk.CfnOutput(this, 'TableName', { value: lettersTable.tableName });
   }

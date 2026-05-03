@@ -1,11 +1,20 @@
 import type { Letter } from './types';
+import { getIdToken } from './auth';
 
 const API_URL = import.meta.env.VITE_API_URL as string;
+
+async function apiHeaders(): Promise<Record<string, string>> {
+  const token = await getIdToken();
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': token,
+  };
+}
 
 export async function initiateUpload(file: File): Promise<{ letterId: string; uploadUrl: string }> {
   const response = await fetch(`${API_URL}/letters`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await apiHeaders(),
     body: JSON.stringify({
       fileName: file.name,
       fileSize: file.size,
@@ -34,18 +43,21 @@ export async function uploadToS3(uploadUrl: string, file: File): Promise<void> {
 }
 
 export async function getLetters(): Promise<Letter[]> {
-  const response = await fetch(`${API_URL}/letters`);
+  const response = await fetch(`${API_URL}/letters`, { headers: await apiHeaders() });
   if (!response.ok) throw new Error('Failed to fetch letters');
   return response.json();
 }
 
 export async function getLetter(letterId: string): Promise<Letter> {
-  const response = await fetch(`${API_URL}/letters/${letterId}`);
+  const response = await fetch(`${API_URL}/letters/${letterId}`, { headers: await apiHeaders() });
   if (!response.ok) throw new Error('Failed to fetch letter');
   return response.json();
 }
 
 export async function deleteLetter(letterId: string): Promise<void> {
-  const response = await fetch(`${API_URL}/letters/${letterId}`, { method: 'DELETE' });
+  const response = await fetch(`${API_URL}/letters/${letterId}`, {
+    method: 'DELETE',
+    headers: await apiHeaders(),
+  });
   if (!response.ok) throw new Error('Failed to delete letter');
 }

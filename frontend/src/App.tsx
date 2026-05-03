@@ -2,18 +2,27 @@ import { useState, useEffect, useCallback } from 'react';
 import { UploadForm } from './components/UploadForm';
 import { LetterList } from './components/LetterList';
 import { LetterDetail } from './components/LetterDetail';
+import { AuthPage } from './components/AuthPage';
 import { getLetters, getLetter, deleteLetter } from './api';
+import { getCurrentUser, signOut } from './auth';
 import type { Letter } from './types';
 import './App.css';
 
 const POLL_INTERVAL_MS = 3000;
 
 export default function App() {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [letters, setLetters] = useState<Letter[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const selectedLetter = letters.find((l) => l.letterId === selectedId) ?? null;
+
+  useEffect(() => {
+    getCurrentUser()
+      .then(() => setAuthenticated(true))
+      .catch(() => setAuthenticated(false));
+  }, []);
 
   const fetchLetters = useCallback(async () => {
     try {
@@ -26,8 +35,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetchLetters();
-  }, [fetchLetters]);
+    if (authenticated) fetchLetters();
+  }, [authenticated, fetchLetters]);
 
   useEffect(() => {
     const pending = letters.filter(
@@ -70,10 +79,24 @@ export default function App() {
     setSelectedId(letterId);
   }
 
+  async function handleSignOut() {
+    await signOut();
+    setAuthenticated(false);
+    setLetters([]);
+    setSelectedId(null);
+  }
+
+  if (authenticated === null) return null;
+
+  if (!authenticated) {
+    return <AuthPage onAuthenticated={() => setAuthenticated(true)} />;
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>Clinical Letters</h1>
+        <button className="sign-out-button" onClick={handleSignOut}>Sign out</button>
       </header>
 
       <main className="app-main">

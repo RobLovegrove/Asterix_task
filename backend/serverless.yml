@@ -2,6 +2,8 @@ service: asterix-clinical-letters
 
 frameworkVersion: '4'
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -9,7 +11,6 @@ provider:
   environment:
     BUCKET_NAME: !Ref LettersBucket
     TABLE_NAME: !Ref LettersTable
-    ANTHROPIC_API_KEY: ${env:ANTHROPIC_API_KEY}
   iam:
     role:
       statements:
@@ -25,6 +26,10 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:Scan
           Resource: !GetAtt LettersTable.Arn
+        - Effect: Allow
+          Action:
+            - bedrock:InvokeModel
+          Resource: 'arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0'
 
 plugins:
   - serverless-offline

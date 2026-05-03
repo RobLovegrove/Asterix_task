@@ -1,13 +1,13 @@
 import { S3Handler } from 'aws-lambda';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import Anthropic from '@anthropic-ai/sdk';
+import AnthropicBedrock from '@anthropic-ai/bedrock-sdk';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdf = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string }>;
 import { dynamodb, s3 } from '../lib/clients';
 
 const TABLE_NAME = process.env.TABLE_NAME!;
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+const bedrock = new AnthropicBedrock({ awsRegion: 'eu-west-2' });
 
 // NHS numbers are 10 digits, sometimes formatted with spaces
 const NHS_NUMBER_REGEX = /\b(\d{3}[ -]?\d{3}[ -]?\d{4})\b/;
@@ -54,8 +54,8 @@ function extractNhsNumber(text: string): string | undefined {
 }
 
 async function summariseLetter(text: string): Promise<string> {
-  const message = await anthropic.messages.create({
-    model: 'claude-opus-4-5',
+  const message = await bedrock.messages.create({
+    model: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
     max_tokens: 1024,
     messages: [
       {

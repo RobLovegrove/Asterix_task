@@ -133,7 +133,7 @@ The current architecture scales automatically without code changes:
 **At 10x traffic:** The current design handles this comfortably. The DynamoDB GSI on `userId` means letter queries scale with the user, not with table size.
 
 **At 100x traffic:**
-- The `getLetters` query uses a GSI scan per user — this remains efficient as long as users don't have thousands of letters
+- The `getLetters` query uses a GSI Query per user — this remains efficient as long as users don't have thousands of letters
 - Lambda cold starts could become noticeable; Provisioned Concurrency would address this for latency-sensitive paths
 - Bedrock has its own throughput limits; we would need to request a quota increase or implement request queuing with SQS
 

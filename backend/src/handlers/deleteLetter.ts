@@ -41,14 +41,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    await s3.send(new DeleteObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: result.Item.s3Key,
-    }));
-
     await dynamodb.send(new DeleteCommand({
       TableName: TABLE_NAME,
       Key: { letterId },
+    }));
+
+    await s3.send(new DeleteObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: result.Item.s3Key,
     }));
 
     console.log(JSON.stringify({ event: 'letter_deleted', letterId }));

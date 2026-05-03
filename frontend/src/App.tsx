@@ -46,10 +46,14 @@ export default function App() {
     if (pending.length === 0) return;
 
     const interval = setInterval(async () => {
-      const updated = await Promise.all(pending.map((l) => getLetter(l.letterId)));
-      setLetters((prev) =>
-        prev.map((l) => updated.find((u) => u.letterId === l.letterId) ?? l)
-      );
+      try {
+        const updated = await Promise.all(pending.map((l) => getLetter(l.letterId)));
+        setLetters((prev) =>
+          prev.map((l) => updated.find((u) => u.letterId === l.letterId) ?? l)
+        );
+      } catch {
+        // transient network failure — interval will retry on next tick
+      }
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);

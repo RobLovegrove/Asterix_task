@@ -16,6 +16,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [loadingLetterId, setLoadingLetterId] = useState<string | null>(null);
 
   const selectedLetter = letters.find((l) => l.letterId === selectedId) ?? null;
 
@@ -61,23 +62,26 @@ export default function App() {
 
   async function handleSelect(letterId: string) {
     setSelectedId(letterId);
+    setLoadingLetterId(letterId);
     try {
       const full = await getLetter(letterId);
       setLetters((prev) => prev.map((l) => l.letterId === letterId ? full : l));
     } catch {
       // fall back to list data already in state
+    } finally {
+      setLoadingLetterId(null);
     }
   }
 
-  async function handleDelete(letterId: string) {
-    try {
-      setDeleteError(null);
-      await deleteLetter(letterId);
-      setLetters((prev) => prev.filter((l) => l.letterId !== letterId));
-      if (selectedId === letterId) setSelectedId(null);
-    } catch {
-      setDeleteError('Failed to delete letter. Please try again.');
-    }
+  async function handleDelete(letterId: string): Promise<void> {
+    setDeleteError(null);
+    await deleteLetter(letterId);
+    setLetters((prev) => prev.filter((l) => l.letterId !== letterId));
+    if (selectedId === letterId) setSelectedId(null);
+  }
+
+  function handleDeleteError() {
+    setDeleteError('Failed to delete letter. Please try again.');
   }
 
   function handleUploadComplete(letterId: string) {
@@ -119,13 +123,19 @@ export default function App() {
                 selectedId={selectedId}
                 onSelect={handleSelect}
                 onDelete={handleDelete}
+                onDeleteError={handleDeleteError}
               />
             )}
           </div>
         </aside>
 
         <section className="detail-panel">
-          {selectedLetter ? (
+          {loadingLetterId ? (
+            <div className="processing-state">
+              <div className="spinner" />
+              <p>Loading letter...</p>
+            </div>
+          ) : selectedLetter ? (
             <LetterDetail letter={selectedLetter} />
           ) : (
             <p className="empty-state">Select a letter to view its summary.</p>

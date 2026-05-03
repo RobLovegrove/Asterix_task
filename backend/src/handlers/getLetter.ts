@@ -7,6 +7,7 @@ const TABLE_NAME = process.env.TABLE_NAME!;
 export const handler: APIGatewayProxyHandler = async (event) => {
   try {
     const letterId = event.pathParameters?.id;
+    const userId = event.requestContext.authorizer?.claims?.sub as string;
 
     if (!letterId) {
       return {
@@ -29,6 +30,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
+    if (result.Item.userId !== userId) {
+      return {
+        statusCode: 403,
+        headers: corsHeaders(),
+        body: JSON.stringify({ error: 'Forbidden' }),
+      };
+    }
+
     return {
       statusCode: 200,
       headers: corsHeaders(),
@@ -47,6 +56,6 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type,X-Api-Key',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   };
 }

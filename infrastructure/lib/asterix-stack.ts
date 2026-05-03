@@ -36,6 +36,12 @@ export class AsterixStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    lettersTable.addGlobalSecondaryIndex({
+      indexName: 'userId-index',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'uploadedAt', type: dynamodb.AttributeType.STRING },
+    });
+
     const userPool = new cognito.UserPool(this, 'UserPool', {
       selfSignUpEnabled: true,
       signInAliases: { email: true },

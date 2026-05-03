@@ -2,6 +2,7 @@ export type LetterStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface Letter {
   letterId: string;
+  userId: string;
   fileName: string;
   s3Key: string;
   status: LetterStatus;

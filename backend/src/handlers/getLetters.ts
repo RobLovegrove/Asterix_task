@@ -1,13 +1,18 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { dynamodb } from '../lib/clients';
 
 const TABLE_NAME = process.env.TABLE_NAME!;
 
-export const handler: APIGatewayProxyHandler = async () => {
+export const handler: APIGatewayProxyHandler = async (event) => {
   try {
-    const result = await dynamodb.send(new ScanCommand({
+    const userId = event.requestContext.authorizer?.claims?.sub as string;
+
+    const result = await dynamodb.send(new QueryCommand({
       TableName: TABLE_NAME,
+      IndexName: 'userId-index',
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: { ':userId': userId },
       ProjectionExpression: 'letterId, fileName, nhsNumber, #status, uploadedAt, processedAt',
       ExpressionAttributeNames: { '#status': 'status' },
     }));
@@ -34,6 +39,6 @@ export const handler: APIGatewayProxyHandler = async () => {
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type,X-Api-Key',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   };
 }

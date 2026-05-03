@@ -39,11 +39,13 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
+    const userId = event.requestContext.authorizer?.claims?.sub as string;
     const letterId = uuidv4();
     const s3Key = `letters/${letterId}/${fileName}`;
 
     const letter: Letter = {
       letterId,
+      userId,
       fileName,
       s3Key,
       status: 'pending',

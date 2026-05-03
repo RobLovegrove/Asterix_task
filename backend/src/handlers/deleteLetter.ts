@@ -18,6 +18,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       };
     }
 
+    const userId = event.requestContext.authorizer?.claims?.sub as string;
+
     const result = await dynamodb.send(new GetCommand({
       TableName: TABLE_NAME,
       Key: { letterId },
@@ -28,6 +30,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
         statusCode: 404,
         headers: corsHeaders(),
         body: JSON.stringify({ error: 'Letter not found' }),
+      };
+    }
+
+    if (result.Item.userId !== userId) {
+      return {
+        statusCode: 403,
+        headers: corsHeaders(),
+        body: JSON.stringify({ error: 'Forbidden' }),
       };
     }
 

@@ -61,7 +61,7 @@ async function summariseLetter(text: string): Promise<string> {
         role: 'user',
         content: `You are a clinical assistant helping doctors quickly understand patient letters.
 
-Summarise the following clinical letter in 3-5 bullet points. Focus on:
+Summarise the following clinical letter in 3-5 bullet points. Do not include a heading or introductory label. Focus on:
 - The primary reason for the letter
 - Key clinical findings or diagnoses
 - Medications or treatments mentioned

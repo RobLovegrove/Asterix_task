@@ -2,6 +2,8 @@
 
 A serverless application that processes NHS clinical letters, extracts relevant data, generates AI-powered summaries, and stores them securely. Built with AWS CDK, Lambda, DynamoDB, S3, and React.
 
+**Live demo:** https://dtxsf656gtbc4.cloudfront.net
+
 ---
 
 ## Architecture Overview
@@ -15,14 +17,7 @@ The system uses an asynchronous processing architecture:
 5. The processing Lambda extracts text from the PDF, identifies the NHS number, and calls Amazon Bedrock (Claude Sonnet 4.5) to generate a summary
 6. Results are stored in DynamoDB and the frontend polls until processing is complete
 
-```
-Browser → API Gateway → Lambda (initiateUpload) → DynamoDB (pending) → S3 pre-signed URL
-Browser → S3 (direct upload)
-S3 event → Lambda (processLetter) → Bedrock (Claude) → DynamoDB (completed)
-Browser → API Gateway → Lambda (getLetters/getLetter) → DynamoDB
-```
-
-See `architecture.png` for the UML sequence diagram.
+See [architecture.md](./architecture.md) for the UML sequence diagram.
 
 ---
 
@@ -111,7 +106,7 @@ cd frontend && npm run build && cd ../infrastructure && npx cdk deploy
 
 ### 1. Security
 
-**What we've implemented:**
+**What's been implemented:**
 - **Authentication**: AWS Cognito with JWT tokens. All API endpoints require a valid token via API Gateway's Cognito authoriser. Users can only access their own letters — the `userId` from the JWT is stored with each letter and verified on every request.
 - **File uploads**: Pre-signed S3 URLs with a 5-minute expiry. The PDF goes directly from the browser to S3 — it never passes through Lambda, reducing attack surface and avoiding Lambda memory limits.
 - **Data at rest**: S3 bucket uses S3-managed encryption (SSE-S3). DynamoDB encrypts at rest by default. The bucket blocks all public access.

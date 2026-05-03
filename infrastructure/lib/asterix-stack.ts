@@ -73,12 +73,19 @@ export class AsterixStack extends cdk.Stack {
       entry: path.join(handlerDir, 'getLetter.ts'),
     });
 
+    const deleteLetterFn = new lambdaNodejs.NodejsFunction(this, 'DeleteLetter', {
+      ...commonLambdaProps,
+      entry: path.join(handlerDir, 'deleteLetter.ts'),
+    });
+
     lettersBucket.grantPut(initiateUploadFn);
     lettersBucket.grantRead(processLetterFn);
+    lettersBucket.grantDelete(deleteLetterFn);
     lettersTable.grantWriteData(initiateUploadFn);
     lettersTable.grantReadWriteData(processLetterFn);
     lettersTable.grantReadData(getLettersFn);
     lettersTable.grantReadData(getLetterFn);
+    lettersTable.grantReadWriteData(deleteLetterFn);
 
     processLetterFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['bedrock:InvokeModel'],
@@ -108,6 +115,7 @@ export class AsterixStack extends cdk.Stack {
 
     const letter = letters.addResource('{id}');
     letter.addMethod('GET', new apigateway.LambdaIntegration(getLetterFn));
+    letter.addMethod('DELETE', new apigateway.LambdaIntegration(deleteLetterFn));
 
     new cdk.CfnOutput(this, 'ApiUrl', { value: api.url });
     new cdk.CfnOutput(this, 'BucketName', { value: lettersBucket.bucketName });

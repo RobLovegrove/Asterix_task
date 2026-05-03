@@ -46,11 +46,6 @@ async function downloadFromS3(bucket: string, key: string): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-function extractNhsNumber(text: string): string | undefined {
-  const match = NHS_NUMBER_REGEX.exec(text);
-  return match?.[1]?.replace(/[ -]/g, '');
-}
-
 async function summariseLetter(text: string): Promise<string> {
   const message = await bedrock.messages.create({
     model: 'eu.anthropic.claude-sonnet-4-5-20250929-v1:0',

@@ -2,7 +2,8 @@ import { S3Handler } from 'aws-lambda';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import Anthropic from '@anthropic-ai/sdk';
-import pdf from 'pdf-parse';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdf = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string }>;
 import { dynamodb, s3 } from '../lib/clients';
 
 const TABLE_NAME = process.env.TABLE_NAME!;

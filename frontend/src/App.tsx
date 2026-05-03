@@ -45,6 +45,16 @@ export default function App() {
     return () => clearInterval(interval);
   }, [letters]);
 
+  async function handleSelect(letterId: string) {
+    setSelectedId(letterId);
+    try {
+      const full = await getLetter(letterId);
+      setLetters((prev) => prev.map((l) => l.letterId === letterId ? full : l));
+    } catch {
+      // fall back to list data already in state
+    }
+  }
+
   function handleUploadComplete(letterId: string) {
     fetchLetters();
     setSelectedId(letterId);
@@ -67,7 +77,7 @@ export default function App() {
               <LetterList
                 letters={letters}
                 selectedId={selectedId}
-                onSelect={setSelectedId}
+                onSelect={handleSelect}
               />
             )}
           </div>

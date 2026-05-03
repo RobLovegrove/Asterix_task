@@ -44,3 +44,8 @@ export async function getLetter(letterId: string): Promise<Letter> {
   if (!response.ok) throw new Error('Failed to fetch letter');
   return response.json();
 }
+
+export async function deleteLetter(letterId: string): Promise<void> {
+  const response = await fetch(`${API_URL}/letters/${letterId}`, { method: 'DELETE' });
+  if (!response.ok) throw new Error('Failed to delete letter');
+}

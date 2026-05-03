@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { UploadForm } from './components/UploadForm';
 import { LetterList } from './components/LetterList';
 import { LetterDetail } from './components/LetterDetail';
-import { getLetters, getLetter } from './api';
+import { getLetters, getLetter, deleteLetter } from './api';
 import type { Letter } from './types';
 import './App.css';
 
@@ -55,6 +55,16 @@ export default function App() {
     }
   }
 
+  async function handleDelete(letterId: string) {
+    try {
+      await deleteLetter(letterId);
+      setLetters((prev) => prev.filter((l) => l.letterId !== letterId));
+      if (selectedId === letterId) setSelectedId(null);
+    } catch {
+      // silently fail — letter stays in list
+    }
+  }
+
   function handleUploadComplete(letterId: string) {
     fetchLetters();
     setSelectedId(letterId);
@@ -78,6 +88,7 @@ export default function App() {
                 letters={letters}
                 selectedId={selectedId}
                 onSelect={handleSelect}
+                onDelete={handleDelete}
               />
             )}
           </div>

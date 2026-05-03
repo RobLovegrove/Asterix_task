@@ -139,11 +139,35 @@ body {
   border-color: #3b82f6;
 }
 
+.letter-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
 .letter-item-name {
   font-size: 0.9rem;
   font-weight: 500;
-  margin-bottom: 6px;
   word-break: break-all;
+}
+
+.delete-button {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.delete-button:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .letter-item-meta {
@@ -157,7 +181,8 @@ body {
 .letter-item-nhs {
   font-size: 0.75rem;
   color: #64748b;
-  margin-top: 4px;
+  margin-top: 2px;
+  margin-bottom: 5px;
 }
 
 /* Status badges */

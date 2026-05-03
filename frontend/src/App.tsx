@@ -15,6 +15,7 @@ export default function App() {
   const [letters, setLetters] = useState<Letter[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const selectedLetter = letters.find((l) => l.letterId === selectedId) ?? null;
 
@@ -66,11 +67,12 @@ export default function App() {
 
   async function handleDelete(letterId: string) {
     try {
+      setDeleteError(null);
       await deleteLetter(letterId);
       setLetters((prev) => prev.filter((l) => l.letterId !== letterId));
       if (selectedId === letterId) setSelectedId(null);
     } catch {
-      // silently fail — letter stays in list
+      setDeleteError('Failed to delete letter. Please try again.');
     }
   }
 
@@ -104,6 +106,7 @@ export default function App() {
           <UploadForm onUploadComplete={handleUploadComplete} />
           <div className="letter-list-section">
             <h2>Letters</h2>
+            {deleteError && <p className="error-text">{deleteError}</p>}
             {loadError ? (
               <p className="error-text">{loadError}</p>
             ) : (

@@ -32,6 +32,7 @@ See [architecture.md](./architecture.md) for the UML sequence diagram.
 | LLM | Amazon Bedrock (Claude Sonnet 4.5) | Data never leaves AWS infrastructure — critical for NHS data sovereignty; IAM-based access removes the need to manage API keys |
 | Auth | AWS Cognito | Managed user authentication with JWT tokens; integrates natively with API Gateway authorisers |
 | Frontend | React + Vite | Fast build tooling; straightforward component model for the required UI |
+| State management | React built-in (`useState` / `useCallback`) | The application has no cross-component shared state that would justify a global store; component-level state is sufficient and easier to reason about at this scale |
 | Language | TypeScript throughout | Type safety across backend and frontend; shared types where possible |
 
 ---

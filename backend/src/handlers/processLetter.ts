@@ -4,12 +4,11 @@ import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import AnthropicBedrock from '@anthropic-ai/bedrock-sdk';
 import { extractText } from 'unpdf';
 import { dynamodb, s3 } from '../lib/clients';
+import { extractNhsNumber } from '../lib/nhsNumber';
 
 const TABLE_NAME = process.env.TABLE_NAME!;
 const bedrock = new AnthropicBedrock({ awsRegion: 'eu-west-2' });
 
-// NHS numbers are 10 digits, sometimes formatted with spaces
-const NHS_NUMBER_REGEX = /\b(\d{3}[ -]?\d{3}[ -]?\d{4})\b/;
 
 export const handler: S3Handler = async (event) => {
   for (const record of event.Records) {

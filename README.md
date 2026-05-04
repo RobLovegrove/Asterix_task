@@ -4,6 +4,8 @@ A serverless application that processes NHS clinical letters, extracts relevant 
 
 **Live demo:** https://dtxsf656gtbc4.cloudfront.net
 
+> To try the demo, click **Create account** on the login screen and register with any email address. You'll receive a verification code to confirm your account.
+
 ---
 
 ## Architecture Overview
